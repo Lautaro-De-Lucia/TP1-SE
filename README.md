@@ -27,7 +27,7 @@ Al iniciar, el programa queda en espera hasta que el usuario presione un botón.
 
 #### Flujo
 
-1. Al iniciar, el sistema informa por el monitor serial que debe presionarse el botón para comenzar a grabar.
+1. Al iniciar, el sistema informa por el serial monitor que debe presionarse el botón para comenzar a grabar.
 2. Al pulsar el botón:
     - Comienza a grabar audio desde el módulo KY-037.
     - El LED de grabación se enciende.
