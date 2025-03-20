@@ -42,6 +42,6 @@ Al iniciar, el programa queda en espera hasta que el usuario presione un botón.
 
 <center>
 
-![alt text](ddb.png)
+![alt text](/imgs/ddb.png)
 
 </center>
