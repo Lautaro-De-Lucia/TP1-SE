@@ -32,7 +32,7 @@ Al iniciar, el programa queda en espera hasta que el usuario presione un botón.
     - Comienza a grabar audio desde el módulo KY-037.
     - El LED de grabación se enciende.
     - Los valores de audio se transmiten por UART a la PC.
-3. Al pulsar nuevamente el botón 
+3. Al pulsar nuevamente el botón:
     - Finaliza la grabación.
     - El LED se apaga.
     - Dejan de transmitirse los datos por UART. 
