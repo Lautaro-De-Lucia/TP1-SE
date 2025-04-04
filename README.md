@@ -54,7 +54,7 @@ A continuación se resume el flujo de la aplicación en forma de diagramas para 
 
 <center>
 
-![alt text](image-3.png)
+![alt text](image-8.png)
 
 </center>
 
