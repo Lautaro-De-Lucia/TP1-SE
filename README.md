@@ -39,7 +39,7 @@ Con el fin de obtener código apropiadamente modularizado, con bajo acoplamiento
 
 <center>
 
-![](MEDIA/DDC.png)
+![](media/DDC.png)
 
 </center>
 
@@ -58,7 +58,7 @@ Aunque el diagrama de clases pueda parecer complejo, es fácil comprobar que el 
 
 <center>
 
-![](MEDIA/flujo.png)
+![](media/flujo.png)
 
 </center>
 
