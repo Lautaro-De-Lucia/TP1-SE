@@ -3,36 +3,32 @@
 
 #include "mbed.h"
 #include "PedalFSM.h"
+#include "SDCard.h"
 
 class AudioController {
 public:
-
 #ifdef HAS_DAC
-    explicit AudioController(PinName mic = A2, PinName dac = A3,
-                             PinName tx = USBTX, PinName rx = USBRX,
-                             int baud = 230400);
+    explicit AudioController(PinName mic = A3, PinName dac = A4);
 #else
-    explicit AudioController(PinName mic = A2,
-                             PinName tx  = USBTX, PinName rx = USBRX,
-                             int baud = 230400);
+    explicit AudioController(PinName mic = A3);
 #endif
 
     void update(FSMState st);
-
     void handleSampling();
-
     void configSampleRate(int sr_hz);
 
 private:
-    AnalogIn        _mic;
+    AnalogIn _mic;
 #ifdef HAS_DAC
-    AnalogOut       _dac;
+    AnalogOut _dac;
 #endif
-    BufferedSerial  _uart;
+
+    SDCard _sd;
 
     bool _powered{false};
     bool _distort{false};
-    bool _useUart{false};
+    bool _useDac{false};
+    bool _sdStreamOpen{false};
 
     float _lpFiltered{0.0f};
 
@@ -41,4 +37,4 @@ private:
     void     _send(uint16_t s);
 };
 
-#endif 
+#endif
