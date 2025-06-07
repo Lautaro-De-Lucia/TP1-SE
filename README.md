@@ -21,7 +21,7 @@ Un pedal de efectos es un sistema que transforma una señal incidente en una se�
 
 Si bien estos efectos suelen ser analógicos, la mayoría de ellos puede emularse digitalmente con poca dificultad, por lo que resulta verosímil implementar un pedal de efectos digital en un microcontrolador que disponga de un ADC, como lo es el caso de la NUCLEO-F103RB. 
 
-En nuestro caso, se decidió implementar un pedal de ***distorsión***. La idea era poder seleccionar entre sonido limpio y distorsionado, al tiempo que también se puede seleccionar si la salida resultante se transmite por medio del DAC del dispositivo o se envía a un puerto UART para su posterior procesamiento. Esto deriva en el siguiente diagrama de estados implementado como una FSM en el código.
+En nuestro caso, se decidió implementar un pedal de ***distorsión***. La idea era poder seleccionar entre sonido limpio y distorsionado, al tiempo que también se puede seleccionar si la salida resultante se transmite por medio del DAC del dispositivo o se graba a una tarjeta SD para su posterior procesamiento. Esto deriva en el siguiente diagrama de estados implementado como una FSM en el código.
 
 <center>
 
@@ -29,7 +29,7 @@ En nuestro caso, se decidió implementar un pedal de ***distorsión***. La idea 
 
 </center>
 
-Donde se ve claramente que el control involucra tres botones, uno para encender y apagar el pedal, otro para seleccionar entre sonido limpio y distorsionado y un tercero para seleccionar entre salida por UART o DAC. 
+Donde se ve claramente que el control involucra tres botones, uno para encender y apagar el pedal, otro para seleccionar entre sonido limpio y distorsionado y un tercero para seleccionar entre salida por SD o DAC. 
 
 Los detalles electroacústicos de el pedal de distorsión así como el diseño de la etapa de preamplificación necesaria para conectar una guitarra al dispositivo se encuentran en respectivos anexos al final de este README.
 
@@ -64,7 +64,7 @@ Aunque el diagrama de clases pueda parecer complejo, es fácil comprobar que el 
 
 En el primero observamos el flujo principal del programa. Luego de leer el estado de los botones, se actualiza la FSM, y el nuevo estado informa a los controladores cómo deben ajustar su comportamiento. La captura de audio se realiza por medio de un ***Ticker*** que se encarga de llamar a la función de captura de audio cada vez que el timer llega a su valor máximo. 
 
-En el segundo, vemos como el controlador de audio maneja esta captura, seleccionando distorsionarla o no y enviarla por UART o DAC según el estado de la FSM que se le fue informado en el bucle principal. 
+En el segundo, vemos como el controlador de audio maneja esta captura, seleccionando distorsionarla o no y enviarla por SD o DAC según el estado de la FSM que se le fue informado en el bucle principal. 
 
 
 ## Especificaciones
@@ -72,8 +72,7 @@ En el segundo, vemos como el controlador de audio maneja esta captura, seleccion
 - **Microcontrolador**: STM32F103RB (ARM Cortex-M3).
 - **Entrada Analógica**: Señal de Audio de la guitarra preamplificada para centrarse en 1.65V y tener una excursión que no exceda los límites del ADC. 
 - **Frecuencia de muestreo:** Por simplicidad, se utilizó una frecuencia de muestreo de 8 kHz.
-- **Baudrate UART:** 230400 bps.
- 
+- ***MicroSD***: Sandisk Ultra 32GB, formateada en FAT32. 
 
 | Periférico           | Uso en el sistema                           | Pin utilizado    |
 |----------------------|--------------------------------------------|------------------|
@@ -83,6 +82,12 @@ En el segundo, vemos como el controlador de audio maneja esta captura, seleccion
 | distBtn          | Cambia entre distorsión y sonido limpio   | PC_8  |
 | SDA I2C | Comunicación I2C | D14/SDA   |
 | SCL I2C | Comunicación I2C | D15/SCL   |
+| CS SPI | Comunicación SPI (SD) | PB12  |
+| SCK SPI | Comunicación SPI (SD) | PB13  |
+| MISO SPI | Comunicación SPI (SD) | PB14  |
+| MOSI SPI | Comunicación SPI (SD) | PB15  |
+
+
 
 ## Diagrama de Bloques
 
@@ -96,10 +101,11 @@ En el segundo, vemos como el controlador de audio maneja esta captura, seleccion
 
 - El pedal de efectos fue implementado con éxito en la NUCLEO-F103RB, las pistas de audio y el video de demostración se adjuntan en este repositorio. Como se oye, la calidad del audio no es la mejor, sobre todo para el tono limpio. Se juzga que esto se debe a una deficiencia en el valor absoluto de la amplificación, la cual fue conservadora tanto en términos de ganancia como en asumir un $V_{pp}$ alto para la señal de la guitarra (ver Anexo). La baja amplitud resultante se vuelve entonces comparable al ruido propio de el dispositivo y los componentes utilizados, haciendo que la señal limpia suene ruidosa. La señal distorsionada, por otro lado, resulta mucho más agradable al oido y es consistente con las características acústicas descritas en el Anexo. 
 
-- A esto debemos agregarle las limitaciones propias de el dispositivo, las cuales involucran una frecuencia de muestreo que no puede exceder los 8kHz (una frecuencia de 16kHz podría involucrar una perdida de datos tanto por exigir un baudrate que el dispositivo no puede proporcionar así como el hecho de que el bucle principal puede tardar más que los microsegundos correspondientes a la interrupción del timer). La resolución del ADC en 12 bits es decente pero podría ser incluso mayor, las capturas pueden tener un márgen de error considerable y el rango de 0 a 3.3V impone sus propios problemas, dado que la mayoría de los amplificadores operacionales operan con tensiones mayores. 
+- La resolución del ADC en 12 bits es decente pero podría ser incluso mayor, las capturas pueden tener un márgen de error considerable y el rango de 0 a 3.3V impone sus propios problemas, dado que la mayoría de los amplificadores operacionales operan con tensiones mayores. 
 
-- En suma, concluimos que ***el dispositivo es perfectamente capaz de captar y procesar audio***, pero ***no resulta idoneo*** para fines acústicos. Es probable, por lo tanto, que eligamos modificar nuestro proyecto en la próxima entrega, reutilizando los módulos de audio definidos en este proyecto para grabar audio de forma fideligna e incluso hacer algo de pre-procesamiento del mismo, pero descartando utilizar el dispositivo para fines acústicos. 
+- La incorporación de una tarjeta SD para grabar el audio en lugar de la transmisión UART implementada en el TP2 seguramente permita grabar a mayores frecuencias de muestreo. Sin embargo, y como se muestra en el video de demostración, el audio grabado parece incorporar una distorsión adicional respecto al obtenido en el TP2. Se especula que la conexión SPI puede de alguna forma introducir algo de ruido en el dispositivo que condicione la resolución de la captura en el ADC.
 
+- En suma, concluimos que ***el dispositivo es perfectamente capaz de captar y procesar audio***, pero ***no resulta idoneo*** para fines acústicos.
 
 ## Anexo 1 - Emulación por Software del Efecto de Distorsión
 
