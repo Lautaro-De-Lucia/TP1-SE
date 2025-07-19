@@ -1,9 +1,13 @@
 // DisplayController.cpp
 #include "DisplayController.h"
+#include <cstring>
+#include <cstdio>
 
 DisplayController::DisplayController()
     : _lastPower(false), _lastDist(false), _lastRec(false)
 {
+    std::strcpy(_model,      "BOSS-DS2");  
+    std::strcpy(_lastModel,  "");          
     _disp.init();
     _disp.clear();
 }
@@ -12,16 +16,24 @@ void DisplayController::_refresh(bool powered,
                                  bool distorted,
                                  bool recording)
 {
-    if (!powered) {
-        _disp.clear();
-        return;
-    }
+    if (!powered) { _disp.clear(); return; }
+
     _disp.clear();
     _disp.setCursor(0,0);
-    _disp.print(distorted ? "DIST: ON " : "DIST: OFF");
+    _disp.print("MODEL:");
+    _disp.print(_model);                
     _disp.setCursor(0,1);
-    _disp.print(recording ? "UART: ON " : "UART: OFF");
+    _disp.print(distorted ? "DIST:ON " : "DIST:OFF");
+    _disp.setCursor(9,1);
+    _disp.print(recording ? "REC:ON " : "REC:OFF");
 }
+
+void DisplayController::setModelName(const char* name)
+{
+    std::strncpy(_model, name, sizeof(_model));
+    _model[sizeof(_model)-1] = '\0';
+}
+
 
 void DisplayController::update(FSMState state)
 {
@@ -31,12 +43,18 @@ void DisplayController::update(FSMState state)
     bool recording = (state == FSMState::ON_UART_CLEAN ||
                       state == FSMState::ON_UART_DISTORT);
 
+    bool modelChanged = (std::strcmp(_model, _lastModel) != 0);
+
     if (powered != _lastPower ||
-        (powered && (distorted != _lastDist || recording != _lastRec)))
+        (powered && (distorted != _lastDist ||
+                     recording != _lastRec ||
+                     modelChanged)))
     {
         _refresh(powered, distorted, recording);
+
         _lastPower = powered;
         _lastDist  = distorted;
         _lastRec   = recording;
+        std::strcpy(_lastModel, _model);
     }
 }
