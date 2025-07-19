@@ -70,7 +70,6 @@ void SDCard::closeTextStream()
     }
 }
 
-// Binary stream methods
 bool SDCard::openBinaryStream(const char* fileName, bool append)
 {
     if (_binary_fp) closeBinaryStream();

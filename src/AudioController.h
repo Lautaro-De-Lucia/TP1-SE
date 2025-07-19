@@ -12,7 +12,8 @@ public:
 #else
     explicit AudioController(PinName mic = A3);
 #endif
-
+    void setGain(float g);     
+    void setTone(float t);     
     void update(FSMState st);
     void handleSampling();
     void configSampleRate(int sr_hz);
@@ -25,6 +26,8 @@ private:
 
     SDCard _sd;
 
+    float _gain {4.0f};       
+    float _tone {0.5f};       
     bool _powered{false};
     bool _distort{false};
     bool _useDac{false};

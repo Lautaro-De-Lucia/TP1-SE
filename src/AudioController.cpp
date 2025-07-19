@@ -36,6 +36,15 @@ void AudioController::update(FSMState st)
     _useDac  = shouldUseDac;
 }
 
+void AudioController::setGain(float g)
+{
+    _gain = (g < 0.1f) ? 0.1f : (g > 8.0f ? 8.0f : g);
+}
+void AudioController::setTone(float t)
+{
+    _tone = (t < 0.0f) ? 0.0f : (t > 1.0f ? 1.0f : t);
+}
+
 void AudioController::handleSampling()
 {
     if (!_powered) return;
@@ -54,17 +63,18 @@ uint16_t AudioController::_readMic()
 
 uint16_t AudioController::_applyDistortion(uint16_t raw)
 {
-    int16_t s = static_cast<int16_t>(raw) - 2048;
-    float amplified = 4.0f * s;
+    int16_t s = static_cast<int16_t>(raw) - 2048;      
+    float   amplified = _gain * s;                     
 
-    if (amplified > 400) amplified = 400;
+    if (amplified > 400)  amplified = 400;
     if (amplified < -400) amplified = -400;
 
     _lpFiltered      = 0.9f * amplified + 0.1f * _lpFiltered;
     float hpFiltered = amplified - _lpFiltered;
-    float tone       = 0.5f * (_lpFiltered + hpFiltered);
 
-    return static_cast<uint16_t>(tone + 2048);
+    float mixed = _tone * hpFiltered + (1.0f - _tone) * _lpFiltered;
+
+    return static_cast<uint16_t>(mixed + 2048);
 }
 
 void AudioController::_send(uint16_t s)

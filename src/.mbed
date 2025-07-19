@@ -1,5 +1,3 @@
 ROOT=.
-DEVICE_ID[/home/studio/workspace/TP2]=066CFF35304B4E3043044623
-DEVICE_TYPE[/home/studio/workspace/TP2]=connected
 TARGET=NUCLEO_F103RB
 TARGET_CODE=0700
